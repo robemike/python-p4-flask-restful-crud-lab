@@ -47,7 +47,27 @@ class PlantByID(Resource):
         plant = Plant.query.filter_by(id=id).first().to_dict()
         return make_response(jsonify(plant), 200)
 
-
+    # Create a patch instance method to handle updating of a plant object records in the database.
+    def patch(self, id):
+        plant_record = Plant.query.filter(Plant.id == id).first()
+        for attr in request.form:
+            setattr(plant_record, attr, request.form[attr])
+        db.session.add(plant_record)
+        db.session.commit()
+        response_dict = plant_record.to_dict()
+        response_dict['is_in_stock'] = False  # Update is_in_stock to False after updating the record.
+        response = make_response(response_dict, 200)
+        return response
+    # Create a delete instance method to handle delete an object from the database.
+    def delete(self, id):
+        plant_record = Plant.query.filter(Plant.id == id).first()
+        db.session.delete(plant_record)
+        db.session.commit()
+        response_dict = {
+            "message": "Plant record deleted successfully"
+        }
+        response = make_response(response_dict, 204)
+        return response
 api.add_resource(PlantByID, '/plants/<int:id>')
 
 
